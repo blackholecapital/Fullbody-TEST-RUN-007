@@ -1,0 +1,4 @@
+stage 1 dispatch issued
+worker_a file created
+worker_b file created
+checksum result
