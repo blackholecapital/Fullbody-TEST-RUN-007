@@ -1,0 +1,274 @@
+BUILD SHEET — LEAN PROTOTYPE V1.11
+
+job:
+  job_id: TEST-RUN-006
+  job_name: test_6_evidence_acceptance_and_closeout
+  objective: validate the lean factory pipeline using /job_site/, including operator-provided evidence acceptance for checksum and final closure
+  requested_outcome: confirm Foreman A routes strict worker tasks, workers create exact Test 6 artifacts, Foreman B accepts valid checksum evidence from declared sources, and Factory Control Interface closes with TPS report
+  factory_approved_chassis: attached for reference
+  job_site_root: /job_site
+  reference_materials:
+    - attached factory-approved chassis
+  active_run_docs:
+    - /job_site/factory-manual-v1.11.txt
+    - /job_site/foreman-manual-v1.11.txt
+    - /job_site/worker-execution-manual-v1.1.txt
+    - /job_site/build-sheet-TEST-RUN-006.txt
+  operator_notes: use isolated path /job_site/test_run_006 only
+
+run_control:
+  control_interface: Factory Control Interface
+  execution_foreman: "Foreman A the Blueprint Foreman"
+  checksum_foreman: "Foreman B the Systems Foreman"
+  mode: parallel
+  final_validator: Factory Control Interface
+
+output_rules:
+  stage_activity_log: /job_site/test_run_006/stage_activity_log.txt
+  final_tps_report: /job_site/test_run_006/TPS_REPORT.txt
+  mandatory_foreman_tag_block:
+    - job_id
+    - foreman
+    - current_stage
+    - current_pass
+    - next_stage
+    - next_owner
+    - passes_remaining
+    - status
+    - current_action
+  mandatory_foreman_execution_block:
+    - artifacts
+    - checkpoint_result
+    - handoff_instruction
+    - issue_if_patch_or_error
+  mandatory_worker_output:
+    - "[PROJECT | WORKER | STAGE | RESULT]"
+    - status
+    - artifacts
+    - summary
+    - issues_if_patch
+
+stages:
+  - stage_id: 1
+    stage_name: dispatch_test_6_writes
+    owner: "Foreman A the Blueprint Foreman"
+    goal: create isolated Test 6 probe files and stage activity log under /job_site/test_run_006
+    inputs:
+      - /job_site/factory-manual-v1.11.txt
+      - /job_site/foreman-manual-v1.11.txt
+      - /job_site/worker-execution-manual-v1.1.txt
+      - /job_site/build-sheet-TEST-RUN-006.txt
+      - attached factory-approved chassis
+    accepted_validation_evidence:
+      - attached_file_system
+      - exact_repo_url
+      - attached_archive
+      - foreman_handoff_text
+      - worker_handoff_text
+    worker_orders:
+      worker_a:
+        assigned: yes
+        task: create directory /job_site/test_run_006 if missing, then write /job_site/test_run_006/worker_a_probe_v6.txt with exact contents "TEST-RUN-006 | Worker A | PASS 1"
+        expected_artifacts:
+          - /job_site/test_run_006/worker_a_probe_v6.txt
+        required_references:
+          - /job_site/factory-manual-v1.11.txt
+          - /job_site/worker-execution-manual-v1.1.txt
+          - /job_site/build-sheet-TEST-RUN-006.txt
+        repo_mirror_required: no
+        commit_required: no
+        push_required: no
+      worker_b:
+        assigned: yes
+        task: create directory /job_site/test_run_006 if missing, then write /job_site/test_run_006/worker_b_probe_v6.txt with exact contents "TEST-RUN-006 | Worker B | PASS 1"; also write /job_site/test_run_006/stage_activity_log.txt with exact lines "stage 1 dispatch issued", "worker_a_probe_v6 created", "worker_b_probe_v6 created", "worker format validation pending"
+        expected_artifacts:
+          - /job_site/test_run_006/worker_b_probe_v6.txt
+          - /job_site/test_run_006/stage_activity_log.txt
+        required_references:
+          - /job_site/factory-manual-v1.11.txt
+          - /job_site/worker-execution-manual-v1.1.txt
+          - /job_site/build-sheet-TEST-RUN-006.txt
+        repo_mirror_required: no
+        commit_required: no
+        push_required: no
+    required_stage_artifacts:
+      - /job_site/test_run_006/worker_a_probe_v6.txt
+      - /job_site/test_run_006/worker_b_probe_v6.txt
+      - /job_site/test_run_006/stage_activity_log.txt
+    required_log_entries:
+      - stage 1 dispatch issued
+      - worker_a_probe_v6 created
+      - worker_b_probe_v6 created
+      - worker format validation pending
+    checkpoint:
+      checkpoint_id: CP-1
+      pass_condition: both probe files exist at exact Test 6 paths with exact contents, stage activity log exists at exact Test 6 path with exact required lines, and both worker replies follow exact worker format
+      patch_condition: if any declared file is missing, wrong, empty, or worker reply format drifts, return PATCH to stage 1
+    handoff:
+      on_pass:
+        next_stage: 2
+        next_owner: "Foreman B the Systems Foreman"
+      on_patch:
+        return_stage: 1
+        return_owner: "Foreman A the Blueprint Foreman"
+      on_error:
+        return_to: Factory Control Interface
+
+  - stage_id: 2
+    stage_name: checksum_test_6_validation
+    owner: "Foreman B the Systems Foreman"
+    goal: validate exact Test 6 artifact paths, exact contents, exact log contents, and evidence acceptance behavior
+    inputs:
+      - /job_site/test_run_006/worker_a_probe_v6.txt
+      - /job_site/test_run_006/worker_b_probe_v6.txt
+      - /job_site/test_run_006/stage_activity_log.txt
+      - worker_a strict-format output
+      - worker_b strict-format output
+      - operator-provided evidence if supplied
+    accepted_validation_evidence:
+      - attached_file_system
+      - exact_repo_url
+      - attached_archive
+      - foreman_handoff_text
+      - worker_handoff_text
+    worker_orders:
+      worker_a:
+        assigned: no
+        task:
+        expected_artifacts:
+          -
+        required_references:
+          -
+        repo_mirror_required: no
+        commit_required: no
+        push_required: no
+      worker_b:
+        assigned: no
+        task:
+        expected_artifacts:
+          -
+        required_references:
+          -
+        repo_mirror_required: no
+        commit_required: no
+        push_required: no
+    required_stage_artifacts:
+      - /job_site/test_run_006/worker_a_probe_v6.txt
+      - /job_site/test_run_006/worker_b_probe_v6.txt
+      - /job_site/test_run_006/stage_activity_log.txt
+    required_log_entries:
+      - stage 1 dispatch issued
+      - worker_a_probe_v6 created
+      - worker_b_probe_v6 created
+      - worker format validation pending
+    checkpoint:
+      checkpoint_id: CP-2
+      pass_condition: all declared Test 6 artifacts exist at exact paths, both probe contents are exact, stage log contents are exact, both worker outputs are strict-format PASS replies, and valid operator-provided evidence must be accepted when it maps directly to declared paths
+      patch_condition: any missing artifact, wrong path, wrong content, wrong log line, ambiguous run identity, inaccessible evidence, or narrative worker reply causes PATCH to stage 1
+    handoff:
+      on_pass:
+        next_stage: 3
+        next_owner: Factory Control Interface
+      on_patch:
+        return_stage: 1
+        return_owner: "Foreman A the Blueprint Foreman"
+      on_error:
+        return_to: Factory Control Interface
+
+  - stage_id: 3
+    stage_name: final_validation_and_close
+    owner: Factory Control Interface
+    goal: validate Test 6 completion and generate TPS report at the isolated Test 6 path
+    inputs:
+      - /job_site/test_run_006/worker_a_probe_v6.txt
+      - /job_site/test_run_006/worker_b_probe_v6.txt
+      - /job_site/test_run_006/stage_activity_log.txt
+      - foreman_a handoff
+      - foreman_b handoff
+      - worker_a strict-format output
+      - worker_b strict-format output
+      - operator-provided evidence if supplied
+    accepted_validation_evidence:
+      - attached_file_system
+      - exact_repo_url
+      - attached_archive
+      - foreman_handoff_text
+      - worker_handoff_text
+    worker_orders:
+      worker_a:
+        assigned: no
+        task:
+        expected_artifacts:
+          -
+        required_references:
+          -
+        repo_mirror_required: no
+        commit_required: no
+        push_required: no
+      worker_b:
+        assigned: no
+        task:
+        expected_artifacts:
+          -
+        required_references:
+          -
+        repo_mirror_required: no
+        commit_required: no
+        push_required: no
+    required_stage_artifacts:
+      - /job_site/test_run_006/worker_a_probe_v6.txt
+      - /job_site/test_run_006/worker_b_probe_v6.txt
+      - /job_site/test_run_006/stage_activity_log.txt
+      - /job_site/test_run_006/TPS_REPORT.txt
+    required_log_entries:
+      - final validation complete
+      - TPS report generated
+    checkpoint:
+      checkpoint_id: CP-3
+      pass_condition: all Test 6 artifacts are present, handoff chain is complete, accepted evidence rules are satisfied, and TPS report is written to /job_site/test_run_006/TPS_REPORT.txt
+      patch_condition: if any closure artifact or validation evidence is incomplete, return ERROR to Factory Control Interface
+    handoff:
+      on_pass:
+        next_stage: COMPLETE
+        next_owner: complete
+      on_patch:
+        return_stage:
+        return_owner:
+      on_error:
+        return_to: Factory Control Interface
+
+final_validation:
+  accepted_validation_evidence:
+    - attached_file_system
+    - exact_repo_url
+    - attached_archive
+    - foreman_handoff_text
+    - worker_handoff_text
+  required_inputs:
+    - /job_site/test_run_006/worker_a_probe_v6.txt
+    - /job_site/test_run_006/worker_b_probe_v6.txt
+    - /job_site/test_run_006/stage_activity_log.txt
+    - worker_a strict-format output
+    - worker_b strict-format output
+    - foreman_a handoff
+    - foreman_b handoff
+  validation_checks:
+    - both files exist at exact declared Test 6 paths
+    - both files contain exact declared text
+    - stage activity log exists at /job_site/test_run_006/stage_activity_log.txt
+    - stage activity log contains exact required lines
+    - worker outputs follow exact strict worker format
+    - accepted operator evidence maps directly to declared paths when used
+    - handoff chain matches declared stage sequence
+    - /job_site/test_run_006/TPS_REPORT.txt exists
+  outputs:
+    - completion_status
+    - /job_site/test_run_006/TPS_REPORT.txt
+
+completion:
+  success_condition:
+    - all declared stages completed
+    - all required artifacts present
+    - /job_site/test_run_006/stage_activity_log.txt present
+    - /job_site/test_run_006/TPS_REPORT.txt present
+  closeout_owner: Factory Control Interface
